@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "576880380556",
+    "firebase_url": "https://alertas-comunitarias-5da80-default-rtdb.firebaseio.com",
+    "project_id": "alertas-comunitarias-5da80",
+    "storage_bucket": "alertas-comunitarias-5da80.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:576880380556:android:f64972ae57384d4b95c9a9",
+        "android_client_info": {
+          "package_name": "com.example.alertascomunitarias"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsLOAxiQpZsbzRGY3Ej0ao7xfHjti8AKM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
