@@ -31,8 +31,6 @@ class MapHomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
         // 1. Configuración de osmdroid
         Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
         setContentView(R.layout.activity_map_home)
@@ -41,10 +39,13 @@ class MapHomeActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
         map = findViewById(R.id.mapView)
 
+
+
         // 3. Configurar Mapa y Permisos
         setupMap()
         requestPermissionsIfNecessary(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
 
+        centerLocation()
         // 4. Botón: Reportar Alerta (Naranja)
         val fabAddAlert = findViewById<FloatingActionButton>(R.id.fabAddAlert)
         fabAddAlert.setOnClickListener {
@@ -55,12 +56,7 @@ class MapHomeActivity : AppCompatActivity() {
         // 5. Botón: Centrar GPS (Blanco)
         val fabCenterLocation = findViewById<FloatingActionButton>(R.id.fabCenterLocation)
         fabCenterLocation.setOnClickListener {
-            if (locationOverlay.myLocation != null) {
-                map.controller.animateTo(locationOverlay.myLocation)
-                map.controller.setZoom(18.0)
-            } else {
-                Toast.makeText(this, "Buscando señal GPS...", Toast.LENGTH_SHORT).show()
-            }
+            centerLocation()
         }
 
         // 6. Menú Inferior (Bottom Navigation)
@@ -85,6 +81,15 @@ class MapHomeActivity : AppCompatActivity() {
         listenForAlerts()
     }
 
+    private fun centerLocation () {
+        if (locationOverlay.myLocation != null) {
+            map.controller.animateTo(locationOverlay.myLocation)
+            map.controller.setZoom(18.0)
+        } else {
+            Toast.makeText(this, "Buscando señal GPS...", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun setupMap() {
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)
@@ -101,7 +106,7 @@ class MapHomeActivity : AppCompatActivity() {
         map.overlays.add(locationOverlay)
     }
 
-    // 🔥 AQUÍ ESTÁN LAS FUNCIONES QUE FALTABAN 🔥
+
     private fun listenForAlerts() {
         db.collection("alerts")
             .whereEqualTo("status", "active")

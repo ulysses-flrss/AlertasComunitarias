@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.alertascomunitarias.R
@@ -21,7 +22,7 @@ class ProfileActivity : AppCompatActivity() {
 
         val etProfileName = findViewById<EditText>(R.id.etProfileName)
         val etProfilePhone = findViewById<EditText>(R.id.etProfilePhone)
-        val switchNotifications = findViewById<Switch>(R.id.switchNotifications)
+        val switchNotifications = findViewById<SwitchCompat>(R.id.switchNotifications)
         val tvRadiusLabel = findViewById<TextView>(R.id.tvRadiusLabel)
         val seekBarRadius = findViewById<SeekBar>(R.id.seekBarRadius)
         val btnSaveProfile = findViewById<Button>(R.id.btnSaveProfile)

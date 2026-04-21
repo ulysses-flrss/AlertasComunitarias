@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.alertascomunitarias.R
+import com.example.alertascomunitarias.auth.LoginActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 
@@ -24,6 +26,7 @@ class RegisterActivity : AppCompatActivity() {
         val etName = findViewById<EditText>(R.id.etRegisterName)
         val etEmail = findViewById<EditText>(R.id.etRegisterEmail)
         val etPassword = findViewById<EditText>(R.id.etRegisterPassword)
+        val tvGoToRegister = findViewById<TextView>(R.id.tvGoToLogin)
 
         btnRegister.setOnClickListener {
             val name = etName.text.toString().trim()
@@ -55,5 +58,12 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
             }
         }
+
+        tvGoToRegister.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
+
+        TODO("Agregar que al registrar un usuario, se cree un objeto vacío en la colección " +
+                "'users' para así definir las preferencias del usuario ")
     }
 }
