@@ -9,19 +9,21 @@
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="56dp" /> <com.google.android.material.floatingactionbutton.FloatingActionButton
-    android:id="@+id/fabCenterLocation"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="24dp"
-    android:layout_marginBottom="16dp"
-    android:src="@drawable/ic_my_location"
-    app:backgroundTint="#FFFFFF"
-    app:tint="#292626"
-    app:fabSize="mini"
-    app:layout_constraintBottom_toTopOf="@+id/fabAddAlert"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:contentDescription="Centrar en mi ubicación" />
+        android:layout_marginBottom="56dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCenterLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_my_location"
+        app:backgroundTint="#FFFFFF"
+        app:tint="#292626"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/fabAddAlert"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:contentDescription="Centrar en mi ubicación" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddAlert"
@@ -41,10 +43,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
+        app:itemIconTint="@color/nav_color_state"
+        app:itemTextColor="@color/nav_color_state"
         app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

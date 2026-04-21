@@ -2,6 +2,9 @@ package com.example.alertascomunitarias.user
 
 import com.example.alertascomunitarias.R
 
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import android.widget.TextView
+import android.widget.Button
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -73,6 +76,13 @@ class MapHomeActivity : AppCompatActivity() {
                     overridePendingTransition(0, 0)
                     true
                 }
+                R.id.nav_feed -> {
+                    val intent = Intent(this, AlertFeedActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    true
+                }
                 else -> false
             }
         }
@@ -113,22 +123,60 @@ class MapHomeActivity : AppCompatActivity() {
             .addSnapshotListener { snapshots, e ->
                 if (e != null) return@addSnapshotListener
 
-                // Limpiar marcadores antiguos si es necesario (simplificado para este ejemplo)
+                // Limpiamos los overlays anteriores para evitar duplicados,
+                // conservando siempre la capa de la ubicación del usuario (el primer elemento)
+                if (map.overlays.size > 1) {
+                    val locationLayer = map.overlays[0]
+                    map.overlays.clear()
+                    map.overlays.add(locationLayer)
+                }
+
                 for (doc in snapshots!!) {
                     val lat = doc.getDouble("latitude") ?: 0.0
                     val lon = doc.getDouble("longitude") ?: 0.0
                     val title = doc.getString("category") ?: "Alerta"
-                    val desc = doc.getString("description") ?: ""
+                    val desc = doc.getString("description") ?: "Sin descripción adicional."
 
                     val marker = Marker(map)
                     marker.position = GeoPoint(lat, lon)
                     marker.title = title
                     marker.snippet = desc
                     marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+                    // 🔥 NUEVO: Lógica al tocar el marcador
+                    marker.setOnMarkerClickListener { currentMarker, mapView ->
+                        mostrarDetallesAlerta(currentMarker.title, currentMarker.snippet)
+
+                        // Centrar la cámara suavemente en el ícono tocado
+                        mapView.controller.animateTo(currentMarker.position)
+                        true // Retornar true indica que ya manejamos el clic
+                    }
+
                     map.overlays.add(marker)
                 }
-                map.invalidate() // Refresca el mapa para pintar los íconos
+                map.invalidate() // Refresca el mapa
             }
+    }
+
+    private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?) {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.layout_bottom_sheet_alert, null)
+
+        // Enlazar los textos del XML con los datos de Firebase
+        val tvCategory = view.findViewById<TextView>(R.id.tvSheetCategory)
+        val tvDescription = view.findViewById<TextView>(R.id.tvSheetDescription)
+        val btnCerrar = view.findViewById<Button>(R.id.btnCerrarSheet)
+
+        tvCategory.text = categoria
+        tvDescription.text = if (descripcion.isNullOrEmpty()) "El usuario no proporcionó detalles adicionales." else descripcion
+
+        // Cerrar la tarjeta al presionar el botón
+        btnCerrar.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
     }
 
     private fun requestPermissionsIfNecessary(permissions: Array<out String>) {
@@ -147,6 +195,9 @@ class MapHomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         map.onResume()
+
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation)
+        bottomNav.menu.findItem(R.id.nav_map).isChecked = true
     }
 
     override fun onPause() {

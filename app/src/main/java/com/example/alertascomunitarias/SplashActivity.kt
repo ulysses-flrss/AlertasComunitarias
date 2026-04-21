@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.alertascomunitarias.auth.LoginActivity
+import com.example.alertascomunitarias.user.MapHomeActivity
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ class SplashActivity : AppCompatActivity() {
         if (currentUser != null) {
             // El usuario ya tiene sesión iniciada, redirigir al Mapa
             // Nota: MapHomeActivity aún no existe, pero ya dejamos la ruta lista
-//            val intent = Intent(this@SplashActivity, MapHomeActivity::class.java)
+            val intent = Intent(this@SplashActivity, MapHomeActivity::class.java)
             startActivity(intent)
         } else {
             // No hay sesión, redirigir a iniciar sesión o registrarse
