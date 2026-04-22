@@ -63,7 +63,6 @@ class RegisterActivity : AppCompatActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
         }
 
-        TODO("Agregar que al registrar un usuario, se cree un objeto vacío en la colección " +
-                "'users' para así definir las preferencias del usuario ")
+
     }
 }
