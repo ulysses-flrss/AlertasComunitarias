@@ -19,13 +19,44 @@
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardFilterFeed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="#F8F9FA"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:layout_constraintTop_toBottomOf="@id/tvFeedTitle">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Filtrar por categoría"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp">
+
+            <AutoCompleteTextView
+                android:id="@+id/dropdownFilterFeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:padding="16dp"
+                android:textColor="#292626" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFeedAlerts"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         android:padding="16dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/tvFeedTitle"
+        app:layout_constraintTop_toBottomOf="@id/cardFilterFeed"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -33,6 +64,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
+        android:elevation="8dp"
+        app:itemActiveIndicatorStyle="@style/buttonBackground"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/primary"
         app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent" />
 

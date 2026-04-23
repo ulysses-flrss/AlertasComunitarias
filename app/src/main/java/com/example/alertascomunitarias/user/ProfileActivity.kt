@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.alertascomunitarias.EditProfileActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -135,15 +136,10 @@ class ProfileActivity : AppCompatActivity() {
                     alertList.add(alert)
                 }
 
-                // 🔥 AQUÍ CONECTAMOS EL ADAPTADOR 🔥
-                val adapter = AlertAdapter(alertList) { alertaSeleccionada ->
-                    // Este bloque de código se ejecutará cuando el usuario toque una alerta de la lista
-                    android.widget.Toast.makeText(
-                        this,
-                        "Tocaste la alerta: ${alertaSeleccionada.category}",
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
+                val adapter = AlertAdapter(alertList) { alertaTocada ->
+                    mostrarDetallesAlerta(alertaTocada.category, alertaTocada.description)
                 }
+                rvAlerts.adapter = adapter
 
                 rvAlerts.adapter = adapter // Asignamos el adaptador al RecyclerView
             }
@@ -152,6 +148,24 @@ class ProfileActivity : AppCompatActivity() {
             }
     }
 
+    private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?) {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.layout_bottom_sheet_alert, null)
+
+        val tvCategory = view.findViewById<TextView>(R.id.tvSheetCategory)
+        val tvDescription = view.findViewById<TextView>(R.id.tvSheetDescription)
+        val btnCerrar = view.findViewById<Button>(R.id.btnCerrarSheet)
+
+        tvCategory.text = categoria
+        tvDescription.text = if (descripcion.isNullOrEmpty()) "Sin detalles adicionales." else descripcion
+
+        btnCerrar.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
+    }
 
 
     data class AlertItem(

@@ -40,7 +40,7 @@ class CreateAlertActivity : AppCompatActivity() {
         val pbLocation = findViewById<ProgressBar>(R.id.pbLocation)
 
         // Poblar el Spinner con las categorías
-        val categories = arrayOf("Robo / Asalto", "Accidente de Tránsito", "Incendio", "Actividad Sospechosa", "Emergencia Médica")
+        val categories = arrayOf("Robo / Asalto", "Accidente de Tránsito", "Incendio", "Actividad Sospechosa", "Emergencia Médica", "Mascota Perdida")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categories)
         spinnerCategory.adapter = adapter
 

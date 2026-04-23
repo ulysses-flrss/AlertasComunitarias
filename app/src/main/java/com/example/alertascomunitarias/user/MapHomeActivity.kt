@@ -2,6 +2,8 @@ package com.example.alertascomunitarias.user
 
 import com.example.alertascomunitarias.R
 
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import android.widget.TextView
 import android.widget.Button
@@ -46,9 +48,10 @@ class MapHomeActivity : AppCompatActivity() {
 
         // 3. Configurar Mapa y Permisos
         setupMap()
+        setupFilter()
         requestPermissionsIfNecessary(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
 
-        centerLocation()
+
         // 4. Botón: Reportar Alerta (Naranja)
         val fabAddAlert = findViewById<FloatingActionButton>(R.id.fabAddAlert)
         fabAddAlert.setOnClickListener {
@@ -100,9 +103,32 @@ class MapHomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupFilter() {
+        // 1. Aquí defines todas tus categorías
+        val categorias = arrayOf("Todas", "Robo / Asalto", "Incendio", "Accidente de Tránsito", "Actividad Sospechosa", "Emergencia Médica", "Mascota Perdida")
+
+        // 2. Creamos el adaptador que dibujará la lista
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categorias)
+
+        // 3. Conectamos el adaptador con la vista XML
+        val dropdown = findViewById<AutoCompleteTextView>(R.id.dropdownFilter)
+        dropdown.setAdapter(adapter)
+
+        // 4. Dejamos "Todas" seleccionada por defecto al abrir la app
+        dropdown.setText(categorias[0], false)
+
+        // 5. Escuchamos cuando el usuario elige una opción
+        dropdown.setOnItemClickListener { parent, view, position, id ->
+            val categoriaSeleccionada = categorias[position]
+            // Llamamos a la función que actualiza el mapa
+            listenForAlerts(categoriaSeleccionada)
+        }
+    }
+
     private fun setupMap() {
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)
+        map.setBuiltInZoomControls(false)
         val mapController = map.controller
         mapController.setZoom(16.0)
 
@@ -114,48 +140,64 @@ class MapHomeActivity : AppCompatActivity() {
         locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), map)
         locationOverlay.enableMyLocation()
         map.overlays.add(locationOverlay)
+
+        locationOverlay.runOnFirstFix {
+            runOnUiThread { centerLocation() }
+        }
+
     }
 
 
-    private fun listenForAlerts() {
-        db.collection("alerts")
-            .whereEqualTo("status", "active")
-            .addSnapshotListener { snapshots, e ->
-                if (e != null) return@addSnapshotListener
+    private fun listenForAlerts(categoriaFiltro: String = "Todas") {
+        // 1. Preparamos la consulta base (solo alertas activas)
+        var query = db.collection("alerts").whereEqualTo("status", "active")
 
-                // Limpiamos los overlays anteriores para evitar duplicados,
-                // conservando siempre la capa de la ubicación del usuario (el primer elemento)
-                if (map.overlays.size > 1) {
-                    val locationLayer = map.overlays[0]
-                    map.overlays.clear()
-                    map.overlays.add(locationLayer)
-                }
+        // 2. Si el usuario eligió un filtro en el menú, modificamos la consulta
+        if (categoriaFiltro != "Todas") {
+            query = query.whereEqualTo("category", categoriaFiltro)
+        }
 
-                for (doc in snapshots!!) {
-                    val lat = doc.getDouble("latitude") ?: 0.0
-                    val lon = doc.getDouble("longitude") ?: 0.0
-                    val title = doc.getString("category") ?: "Alerta"
-                    val desc = doc.getString("description") ?: "Sin descripción adicional."
+        // 3. Ejecutamos la consulta en tiempo real
+        query.addSnapshotListener { snapshots, e ->
+            if (e != null) return@addSnapshotListener
 
-                    val marker = Marker(map)
-                    marker.position = GeoPoint(lat, lon)
-                    marker.title = title
-                    marker.snippet = desc
-                    marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-
-                    // 🔥 NUEVO: Lógica al tocar el marcador
-                    marker.setOnMarkerClickListener { currentMarker, mapView ->
-                        mostrarDetallesAlerta(currentMarker.title, currentMarker.snippet)
-
-                        // Centrar la cámara suavemente en el ícono tocado
-                        mapView.controller.animateTo(currentMarker.position)
-                        true // Retornar true indica que ya manejamos el clic
-                    }
-
-                    map.overlays.add(marker)
-                }
-                map.invalidate() // Refresca el mapa
+            // Limpiamos los marcadores anteriores de la pantalla, pero
+            // siempre salvamos la capa [0] que es el GPS del usuario.
+            if (map.overlays.size > 1) {
+                val locationLayer = map.overlays[0]
+                map.overlays.clear()
+                map.overlays.add(locationLayer)
             }
+
+            // 4. Dibujamos los nuevos puntos filtrados
+            for (doc in snapshots!!) {
+                val lat = doc.getDouble("latitude") ?: 0.0
+                val lon = doc.getDouble("longitude") ?: 0.0
+                val title = doc.getString("category") ?: "Alerta"
+                val desc = doc.getString("description") ?: "Sin descripción adicional."
+
+                val marker = Marker(map)
+                marker.position = GeoPoint(lat, lon)
+                marker.title = title
+                marker.snippet = desc
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+                // Lógica al tocar el marcador
+                marker.setOnMarkerClickListener { currentMarker, mapView ->
+                    // Mostramos la tarjeta emergente inferior
+                    mostrarDetallesAlerta(currentMarker.title, currentMarker.snippet)
+
+                    // Centramos la cámara suavemente en el ícono tocado
+                    mapView.controller.animateTo(currentMarker.position)
+                    true
+                }
+
+                map.overlays.add(marker)
+            }
+
+            // Le decimos al mapa que se actualice visualmente
+            map.invalidate()
+        }
     }
 
     private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?) {
