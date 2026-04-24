@@ -17,6 +17,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AlertasComunitarias">
         <activity
+            android:name=".admin.AdminUsersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminCategoriesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminAlertItem"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminAlertsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminActivity"
+            android:exported="false" />
+        <activity
             android:name=".user.AlertFeedActivity"
             android:exported="false"
             android:theme="@style/Theme.AlertasComunitarias" />

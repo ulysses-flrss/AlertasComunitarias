@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.alertascomunitarias.R
+import com.example.alertascomunitarias.admin.AdminActivity
 import com.example.alertascomunitarias.user.MapHomeActivity
 import com.google.firebase.auth.FirebaseAuth
 
@@ -34,18 +35,33 @@ class LoginActivity : AppCompatActivity() {
             val password = etPassword.text.toString().trim()
 
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                // Función nativa de Firebase para validar usuario
+
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
-                            // Éxito: Ir al mapa
-                            startActivity(Intent(this, MapHomeActivity::class.java))
+
+                            val user = auth.currentUser
+                            val adminEmail = "admin@gmail.com" // Correo de administrador fijo
+
+                            if (user?.email == adminEmail) {
+                                // Ir a pantalla de administrador
+                                startActivity(Intent(this, AdminActivity::class.java))
+                            } else {
+                                // Usuario normal → mapa
+                                startActivity(Intent(this, MapHomeActivity::class.java))
+                            }
+
                             finish()
+
                         } else {
-                            // Error: Mostrar mensaje al usuario
-                            Toast.makeText(this, "Error de autenticación: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "Error de autenticación: ${task.exception?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
+
             } else {
                 Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
             }
