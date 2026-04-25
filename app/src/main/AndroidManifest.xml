@@ -17,13 +17,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AlertasComunitarias">
         <activity
+            android:name=".admin.EditUserActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AddUserActivity"
+            android:exported="false" />
+        <activity
             android:name=".admin.AdminUsersActivity"
-            android:exported="false" />
-        <activity
-            android:name=".admin.AdminCategoriesActivity"
-            android:exported="false" />
-        <activity
-            android:name=".admin.AdminAlertItem"
             android:exported="false" />
         <activity
             android:name=".admin.AdminAlertsActivity"
@@ -37,32 +37,32 @@
             android:theme="@style/Theme.AlertasComunitarias" />
         <activity
             android:name=".user.EditProfileActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".user.ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".user.CreateAlertActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".user.MapHomeActivity"
             android:exported="false" />
         <activity
             android:name=".auth.RegisterActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".auth.LoginActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-+
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

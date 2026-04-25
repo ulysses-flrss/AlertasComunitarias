@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.alertascomunitarias.R
 import com.google.firebase.firestore.FirebaseFirestore
+import android.app.AlertDialog
 
 class AdminAlertAdapter(
     private val alertList: List<AdminAlertItem>
@@ -19,7 +20,6 @@ class AdminAlertAdapter(
         val tvCategory: TextView = itemView.findViewById(R.id.tvAdminCategory)
         val tvDescription: TextView = itemView.findViewById(R.id.tvAdminDescription)
         val tvUser: TextView = itemView.findViewById(R.id.tvAdminUser)
-        val btnResolve: Button = itemView.findViewById(R.id.btnResolve)
         val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
     }
 
@@ -37,16 +37,18 @@ class AdminAlertAdapter(
         holder.tvDescription.text = alert.description
         holder.tvUser.text = "Usuario: ${alert.userName}"
 
-        // Marcar como resuelta
-        holder.btnResolve.setOnClickListener {
-            db.collection("alerts").document(alert.id)
-                .update("status", "resolved")
-        }
-
-        // Eliminar alerta
+        // Eliminar alerta con confirmación
         holder.btnDelete.setOnClickListener {
-            db.collection("alerts").document(alert.id)
-                .delete()
+
+            AlertDialog.Builder(holder.itemView.context)
+                .setTitle("Eliminar alerta")
+                .setMessage("¿Estás seguro de que deseas eliminar esta alerta?")
+                .setPositiveButton("Sí") { _, _ ->
+                    db.collection("alerts").document(alert.id)
+                        .delete()
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
         }
     }
 
