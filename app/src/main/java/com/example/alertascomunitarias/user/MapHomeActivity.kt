@@ -1,7 +1,6 @@
 package com.example.alertascomunitarias.user
 
 import com.example.alertascomunitarias.R
-
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -44,13 +43,10 @@ class MapHomeActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
         map = findViewById(R.id.mapView)
 
-
-
         // 3. Configurar Mapa y Permisos
         setupMap()
         setupFilter()
         requestPermissionsIfNecessary(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-
 
         // 4. Botón: Reportar Alerta (Naranja)
         val fabAddAlert = findViewById<FloatingActionButton>(R.id.fabAddAlert)
@@ -71,7 +67,7 @@ class MapHomeActivity : AppCompatActivity() {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.mapView ->  true
+                R.id.mapView ->  true // Vista actual
                 R.id.nav_profile -> {
                     val intent = Intent(this, ProfileActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
@@ -104,23 +100,14 @@ class MapHomeActivity : AppCompatActivity() {
     }
 
     private fun setupFilter() {
-        // 1. Aquí defines todas tus categorías
         val categorias = arrayOf("Todas", "Robo / Asalto", "Incendio", "Accidente de Tránsito", "Actividad Sospechosa", "Emergencia Médica", "Mascota Perdida")
-
-        // 2. Creamos el adaptador que dibujará la lista
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categorias)
-
-        // 3. Conectamos el adaptador con la vista XML
         val dropdown = findViewById<AutoCompleteTextView>(R.id.dropdownFilter)
         dropdown.setAdapter(adapter)
-
-        // 4. Dejamos "Todas" seleccionada por defecto al abrir la app
         dropdown.setText(categorias[0], false)
 
-        // 5. Escuchamos cuando el usuario elige una opción
         dropdown.setOnItemClickListener { parent, view, position, id ->
             val categoriaSeleccionada = categorias[position]
-            // Llamamos a la función que actualiza el mapa
             listenForAlerts(categoriaSeleccionada)
         }
     }
@@ -144,50 +131,51 @@ class MapHomeActivity : AppCompatActivity() {
         locationOverlay.runOnFirstFix {
             runOnUiThread { centerLocation() }
         }
-
     }
 
-
     private fun listenForAlerts(categoriaFiltro: String = "Todas") {
-        // 1. Preparamos la consulta base (solo alertas activas)
         var query = db.collection("alerts").whereEqualTo("status", "active")
 
-        // 2. Si el usuario eligió un filtro en el menú, modificamos la consulta
         if (categoriaFiltro != "Todas") {
             query = query.whereEqualTo("category", categoriaFiltro)
         }
 
-        // 3. Ejecutamos la consulta en tiempo real
         query.addSnapshotListener { snapshots, e ->
             if (e != null) return@addSnapshotListener
 
-            // Limpiamos los marcadores anteriores de la pantalla, pero
-            // siempre salvamos la capa [0] que es el GPS del usuario.
             if (map.overlays.size > 1) {
                 val locationLayer = map.overlays[0]
                 map.overlays.clear()
                 map.overlays.add(locationLayer)
             }
 
-            // 4. Dibujamos los nuevos puntos filtrados
             for (doc in snapshots!!) {
                 val lat = doc.getDouble("latitude") ?: 0.0
                 val lon = doc.getDouble("longitude") ?: 0.0
                 val title = doc.getString("category") ?: "Alerta"
                 val desc = doc.getString("description") ?: "Sin descripción adicional."
 
+                // 🔥 EXTRAEMOS EL NOMBRE DE FIREBASE
+                val reporterName = doc.getString("userName") ?: "Anónimo"
+
                 val marker = Marker(map)
                 marker.position = GeoPoint(lat, lon)
                 marker.title = title
                 marker.snippet = desc
+
+                // 🔥 GUARDAMOS EL NOMBRE EN LA PROPIEDAD "relatedObject" DEL MARCADOR
+                marker.relatedObject = reporterName
+
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 
-                // Lógica al tocar el marcador
                 marker.setOnMarkerClickListener { currentMarker, mapView ->
-                    // Mostramos la tarjeta emergente inferior
-                    mostrarDetallesAlerta(currentMarker.title, currentMarker.snippet)
 
-                    // Centramos la cámara suavemente en el ícono tocado
+                    // 🔥 RECUPERAMOS EL NOMBRE AL TOCARLO
+                    val nombreExtraido = currentMarker.relatedObject as? String ?: "Anónimo"
+
+                    // Se lo pasamos a la función de la tarjeta
+                    mostrarDetallesAlerta(currentMarker.title, currentMarker.snippet, nombreExtraido)
+
                     mapView.controller.animateTo(currentMarker.position)
                     true
                 }
@@ -195,24 +183,27 @@ class MapHomeActivity : AppCompatActivity() {
                 map.overlays.add(marker)
             }
 
-            // Le decimos al mapa que se actualice visualmente
             map.invalidate()
         }
     }
 
-    private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?) {
+    // 🔥 LA FUNCIÓN AHORA RECIBE EL TERCER PARÁMETRO "userName"
+    private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?, userName: String?) {
         val bottomSheetDialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.layout_bottom_sheet_alert, null)
 
-        // Enlazar los textos del XML con los datos de Firebase
         val tvCategory = view.findViewById<TextView>(R.id.tvSheetCategory)
+        val tvUser = view.findViewById<TextView>(R.id.tvSheetReporter) // Este ID ya lo tenías
         val tvDescription = view.findViewById<TextView>(R.id.tvSheetDescription)
         val btnCerrar = view.findViewById<Button>(R.id.btnCerrarSheet)
 
         tvCategory.text = categoria
+
+        // 🔥 COLOCAMOS EL NOMBRE EN SU LUGAR
+        tvUser.text = if (userName.isNullOrEmpty()) "Anónimo" else userName
+
         tvDescription.text = if (descripcion.isNullOrEmpty()) "El usuario no proporcionó detalles adicionales." else descripcion
 
-        // Cerrar la tarjeta al presionar el botón
         btnCerrar.setOnClickListener {
             bottomSheetDialog.dismiss()
         }
@@ -233,7 +224,6 @@ class MapHomeActivity : AppCompatActivity() {
         }
     }
 
-    // Ciclo de vida del mapa
     override fun onResume() {
         super.onResume()
         map.onResume()
