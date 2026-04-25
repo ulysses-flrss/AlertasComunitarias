@@ -18,6 +18,8 @@ class AlertAdapter(
         val tvCategory: TextView = itemView.findViewById(R.id.tvItemCategory)
         val tvDescription: TextView = itemView.findViewById(R.id.tvItemDescription)
         val tvStatus: TextView = itemView.findViewById(R.id.tvItemStatus)
+        // 🔥 ENLAZAMOS LA FECHA
+        val tvDate: TextView = itemView.findViewById(R.id.tvItemDate)
     }
 
     // 1. Inflar (Crear) la vista para cada elemento de la lista
@@ -34,8 +36,11 @@ class AlertAdapter(
         holder.tvCategory.text = alert.category
         holder.tvDescription.text = if (alert.description.isEmpty()) "Sin descripción" else alert.description
 
+        // 🔥 ASIGNAMOS EL TEXTO DE LA FECHA
+        holder.tvDate.text = alert.date
+
         // Darle un poco de color al estado
-        holder.tvStatus.text = "Estado: ${alert.status.capitalize()}"
+        holder.tvStatus.text = "Estado: ${alert.status.replaceFirstChar { it.uppercase() }}"
         if (alert.status.lowercase() == "active" || alert.status.lowercase() == "activo") {
             holder.tvStatus.setTextColor(holder.itemView.context.resources.getColor(android.R.color.holo_green_dark, null))
         } else {

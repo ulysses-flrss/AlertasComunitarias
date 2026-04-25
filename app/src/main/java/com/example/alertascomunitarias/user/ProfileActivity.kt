@@ -1,18 +1,26 @@
 package com.example.alertascomunitarias.user
 
-import com.example.alertascomunitarias.R
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.alertascomunitarias.EditProfileActivity
+import com.example.alertascomunitarias.user.EditProfileActivity
+import com.example.alertascomunitarias.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -31,19 +39,29 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+        // Inicializar Firebase
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
+        // Enlazar vistas de perfil
         tvName = findViewById(R.id.tvDisplayProfileName)
         tvPhone = findViewById(R.id.tvDisplayProfilePhone)
         tvNotifs = findViewById(R.id.tvDisplayNotifications)
         tvRadius = findViewById(R.id.tvDisplayRadius)
 
-        rvAlerts = findViewById<RecyclerView>(R.id.rvMyAlerts)
+        // Configurar RecyclerView
+        rvAlerts = findViewById(R.id.rvMyAlerts)
         rvAlerts.layoutManager = LinearLayoutManager(this)
         alertList = mutableListOf()
 
-        // Botón para ir a editar
+        // Configurar Filtros y Navegación
+        setupFilter()
+        setupButtons()
+        setupBottomNavigation()
+    }
+
+    private fun setupButtons() {
+        // Botón para ir a editar perfil
         val btnGoToEdit = findViewById<Button>(R.id.btnGoToEdit)
         btnGoToEdit.setOnClickListener {
             startActivity(Intent(this, EditProfileActivity::class.java))
@@ -58,8 +76,31 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+    }
 
-        // Navegación Inferior
+    private fun setupFilter() {
+        val categorias = arrayOf("Todas", "Robo", "Incendio", "Accidente de Tráfico", "Persona Sospechosa", "Emergencia Médica", "Mascota Perdida")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categorias)
+
+        val dropdown = findViewById<AutoCompleteTextView>(R.id.dropdownFilterProfile)
+        dropdown.setAdapter(adapter)
+
+        val switchHistorial = findViewById<SwitchMaterial>(R.id.switchHistorial)
+
+        // Escuchar cambios en el menú desplegable
+        dropdown.setOnItemClickListener { _, _, position, _ ->
+            val categoriaSeleccionada = categorias[position]
+            loadUserAlerts(categoriaSeleccionada, switchHistorial.isChecked)
+        }
+
+        // Escuchar cambios en el switch de historial
+        switchHistorial.setOnCheckedChangeListener { _, isChecked ->
+            val currentFilter = dropdown.text.toString().ifEmpty { "Todas" }
+            loadUserAlerts(currentFilter, isChecked)
+        }
+    }
+
+    private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNav.selectedItemId = R.id.nav_profile
         bottomNav.setOnItemSelectedListener { item ->
@@ -86,14 +127,10 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Asegurar que la burbuja esté en Perfil
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
-        bottomNav.menu.findItem(R.id.nav_profile).isChecked = true
-
-        // Cargar/Actualizar datos desde Firebase cada vez que se muestra la pantalla
+        // Actualizar datos de usuario
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            tvName.text = currentUser.displayName ?: "Usuario Sin Nombre"
+            tvName.text = currentUser.displayName ?: "Usuario"
 
             db.collection("users").document(currentUser.uid).get()
                 .addOnSuccessListener { document ->
@@ -106,57 +143,88 @@ class ProfileActivity : AppCompatActivity() {
 
                         val radius = document.getLong("alertRadiusKm")?.toInt() ?: 5
                         tvRadius.text = "Radio de alerta: $radius km"
-                    } else {
-                        // Valores por defecto si el documento no existe aún
-                        tvPhone.text = "No registrado"
-                        tvNotifs.text = "Notificaciones: Desactivadas"
-                        tvRadius.text = "Radio de alerta: 5 km"
                     }
                 }
         }
-        loadUserAlerts()
+
+        // Recargar alertas con los filtros actuales
+        val dropdown = findViewById<AutoCompleteTextView>(R.id.dropdownFilterProfile)
+        val switchHistorial = findViewById<SwitchMaterial>(R.id.switchHistorial)
+        val currentFilter = dropdown.text.toString().ifEmpty { "Todas" }
+        loadUserAlerts(currentFilter, switchHistorial.isChecked)
     }
 
-    private fun loadUserAlerts() {
+    private fun loadUserAlerts(categoriaFiltro: String = "Todas", mostrarResueltas: Boolean = false) {
         val uid = auth.currentUser?.uid ?: return
 
-        db.collection("alerts")
-            .whereEqualTo("userId", uid)
-            .get()
-            .addOnSuccessListener { documents ->
-                alertList.clear() // Limpiar la lista antes de volver a llenarla
+        // 1. Consulta base por mi ID
+        var query: Query = db.collection("alerts").whereEqualTo("userId", uid)
 
-                for (doc in documents) {
-                    val alert = AlertItem(
-                        id = doc.id,
-                        category = doc.getString("category") ?: "",
-                        description = doc.getString("description") ?: "",
-                        status = doc.getString("status") ?: ""
-                    )
-                    alertList.add(alert)
+        // 2. Si el switch está APAGADO, solo mostramos las activas
+        if (!mostrarResueltas) {
+            query = query.whereEqualTo("status", "active")
+        }
+
+        // 3. Filtro por categoría
+        if (categoriaFiltro != "Todas") {
+            query = query.whereEqualTo("category", categoriaFiltro)
+        }
+
+        // 4. Orden cronológico
+        query.orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshots, e ->
+
+                if (e != null) {
+                    Log.e("FirebaseError", "Error en Perfil: ", e)
+                    // Si sale este mensaje, recuerda crear el Índice Compuesto en la Consola
+                    Toast.makeText(this, "Actualizando lista...", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
                 }
 
+                alertList.clear()
+
+                if (snapshots != null) {
+                    for (doc in snapshots) {
+                        // Formatear la fecha
+                        val timestamp = doc.getTimestamp("timestamp")
+                        val dateString = if (timestamp != null) {
+                            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                            sdf.format(timestamp.toDate())
+                        } else {
+                            "Fecha desconocida"
+                        }
+
+                        val alert = AlertItem(
+                            id = doc.id,
+                            category = doc.getString("category") ?: "Alerta",
+                            description = doc.getString("description") ?: "Sin detalles.",
+                            status = doc.getString("status") ?: "active",
+                            date = dateString,
+                            userName = doc.getString("name") ?: "Yo" // Usamos "name" como en tu DB
+                        )
+                        alertList.add(alert)
+                    }
+                }
+
+                // Asignar al adaptador
                 val adapter = AlertAdapter(alertList) { alertaTocada ->
-                    mostrarDetallesAlerta(alertaTocada.category, alertaTocada.description)
+                    mostrarDetallesAlerta(alertaTocada.category, alertaTocada.description, alertaTocada.userName)
                 }
                 rvAlerts.adapter = adapter
-
-                rvAlerts.adapter = adapter // Asignamos el adaptador al RecyclerView
-            }
-            .addOnFailureListener {
-                android.widget.Toast.makeText(this, "Error al cargar alertas", android.widget.Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?) {
+    private fun mostrarDetallesAlerta(categoria: String?, descripcion: String?, userName: String?) {
         val bottomSheetDialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.layout_bottom_sheet_alert, null)
 
         val tvCategory = view.findViewById<TextView>(R.id.tvSheetCategory)
+        val tvReporter = view.findViewById<TextView>(R.id.tvSheetReporter)
         val tvDescription = view.findViewById<TextView>(R.id.tvSheetDescription)
         val btnCerrar = view.findViewById<Button>(R.id.btnCerrarSheet)
 
         tvCategory.text = categoria
+        tvReporter.text = if (userName.isNullOrEmpty() || userName == "Yo") "Tú (Yo)" else userName
         tvDescription.text = if (descripcion.isNullOrEmpty()) "Sin detalles adicionales." else descripcion
 
         btnCerrar.setOnClickListener {
@@ -167,11 +235,13 @@ class ProfileActivity : AppCompatActivity() {
         bottomSheetDialog.show()
     }
 
-
+    // Modelo de datos para las alertas
     data class AlertItem(
         val id: String = "",
         val category: String = "",
         val description: String = "",
-        val status: String = ""
+        val status: String = "",
+        val date: String = "",
+        val userName: String = ""
     )
 }

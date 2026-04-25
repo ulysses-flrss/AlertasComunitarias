@@ -1,70 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FFFFFF"
-    android:padding="24dp">
-
-    <View
-        android:id="@+id/dragHandle"
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:background="#CCCCCC"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    android:orientation="vertical"
+    android:padding="24dp"
+    > <TextView
+    android:id="@+id/tvSheetCategory"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Categoría"
+    android:textColor="#FF9075"
+    android:textSize="22sp"
+    android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/tvSheetCategory"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Categoría"
-        android:textColor="#FF9075"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/dragHandle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:text="Reportado por:"
+        android:textColor="#888888"
+        android:textSize="12sp" />
 
     <TextView
-        android:id="@+id/tvSheetDescriptionLabel"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvSheetReporter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="Nombre del usuario"
+        android:textColor="#292626"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Descripción del reporte:"
-        android:textColor="#666666"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tvSheetCategory"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textColor="#888888"
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/tvSheetDescription"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Cargando detalles..."
+        android:layout_marginTop="2dp"
+        android:text="Aquí va la descripción detallada..."
         android:textColor="#292626"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/tvSheetDescriptionLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/btnCerrarSheet"
         style="?attr/materialButtonOutlinedStyle"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
         android:layout_marginTop="32dp"
         android:text="Cerrar"
-        android:textColor="#666666"
-        app:strokeColor="#CCCCCC"
-        app:cornerRadius="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvSheetDescription"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:textColor="#FF9075"
+        app:strokeColor="#FF9075"
+        app:cornerRadius="8dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

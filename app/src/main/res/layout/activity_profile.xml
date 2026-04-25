@@ -161,14 +161,51 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFilterProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp"
+                app:layout_constraintTop_toBottomOf="@id/tvMyAlertsTitle">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Filtrar mis alertas"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/dropdownFilterProfile"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:padding="16dp"
+                        android:textColor="#292626" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchHistorial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Mostrar historial (Alertas resueltas)"
+                android:textColor="#666666"
+                app:layout_constraintTop_toBottomOf="@id/cardFilterProfile" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMyAlerts"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginBottom="24dp"
                 android:nestedScrollingEnabled="false"
-                app:layout_constraintTop_toBottomOf="@id/tvMyAlertsTitle"
+                app:layout_constraintTop_toBottomOf="@id/switchHistorial"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
