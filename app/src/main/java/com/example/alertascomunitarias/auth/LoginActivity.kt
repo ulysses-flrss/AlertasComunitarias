@@ -1,6 +1,5 @@
 package com.example.alertascomunitarias.auth
 
-
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
@@ -74,25 +73,33 @@ class LoginActivity : AppCompatActivity() {
                         val uid = auth.currentUser?.uid
 
                         if (uid != null) {
-                            // 🕵️‍♂️ Consultar a Firestore el rol del usuario
+                            // 🕵️‍♂️ Consultar a Firestore para verificar si existe y ver su rol
                             db.collection("users").document(uid).get()
                                 .addOnSuccessListener { document ->
-                                    val rol = document.getString("role") ?: "ciudadano"
 
-                                    if (rol == "administrador") {
-                                        startActivity(Intent(this, AdminActivity::class.java))
+                                    if (document.exists()) {
+                                        // ✅ El usuario es válido, verificamos su rol
+                                        val rol = document.getString("role") ?: "ciudadano"
+
+                                        if (rol == "administrador") {
+                                            startActivity(Intent(this, AdminActivity::class.java))
+                                        } else {
+                                            startActivity(Intent(this, MapHomeActivity::class.java))
+                                        }
+                                        finish() // Cerramos LoginActivity
+
                                     } else {
-                                        startActivity(Intent(this, MapHomeActivity::class.java))
+                                        // ❌ EL TRUCO: El documento no existe (fue eliminado por el admin)
+                                        auth.signOut() // Lo sacamos inmediatamente de Auth
+                                        Toast.makeText(this, "Acceso denegado. Esta cuenta ha sido inhabilitada o eliminada.", Toast.LENGTH_LONG).show()
                                     }
-                                    finish() // Cerramos LoginActivity
                                 }
                                 .addOnFailureListener {
-                                    Toast.makeText(this, "Entrando al mapa...", Toast.LENGTH_SHORT).show()
-                                    startActivity(Intent(this, MapHomeActivity::class.java))
-                                    finish()
+                                    // Error de conexión al intentar leer Firestore
+                                    auth.signOut()
+                                    Toast.makeText(this, "Error de conexión al verificar la cuenta.", Toast.LENGTH_SHORT).show()
                                 }
                         }
-
                     } else {
                         // 4. Manejo detallado de errores de Firebase Auth
                         val exception = task.exception

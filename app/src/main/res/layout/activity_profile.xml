@@ -129,7 +129,7 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:backgroundTint="#FF9075"
+                    android:backgroundTint="@color/primary"
                     android:text="Editar"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"
@@ -137,14 +137,14 @@
 
                 <Button
                     android:id="@+id/btnLogout"
-                    style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="Salir"
-                    android:textColor="#FF9075"
-                    app:strokeColor="#FF9075"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/primary"
+                    android:text="Cerrar Sesion"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
                     app:cornerRadius="8dp" />
             </LinearLayout>
 
@@ -176,6 +176,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Filtrar mis alertas"
                     app:boxStrokeWidth="0dp"
+                    android:background="#F5F5F5"
                     app:boxStrokeWidthFocused="0dp">
 
                     <AutoCompleteTextView
@@ -184,6 +185,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="none"
                         android:padding="16dp"
+
                         android:textColor="#292626" />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -193,10 +195,46 @@
                 android:id="@+id/switchHistorial"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/primary"
+
                 android:layout_marginTop="8dp"
                 android:text="Mostrar historial (Alertas resueltas)"
                 android:textColor="#666666"
+                app:thumbTint="@color/selector_switch_activo"
+                app:trackTint="@color/selector_switch_activo"
                 app:layout_constraintTop_toBottomOf="@id/cardFilterProfile" />
+
+            <LinearLayout
+                android:id="@+id/layoutEmptyStateProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="24dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/switchHistorial"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@android:drawable/ic_dialog_info"
+                    app:tint="#E0E0E0"/>
+
+                <TextView
+                    android:id="@+id/tvEmptyStateProfileText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="No tienes alertas activas en esta categoría"
+                    android:textColor="#888888"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"/>
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMyAlerts"

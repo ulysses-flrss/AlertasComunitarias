@@ -3,9 +3,11 @@ package com.example.alertascomunitarias.user
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,7 @@ import com.example.alertascomunitarias.user.EditProfileActivity
 import com.example.alertascomunitarias.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder // 🔥 IMPORTACIÓN DEL DIÁLOGO
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -25,6 +28,7 @@ import java.util.Locale
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var rvAlerts: RecyclerView
+    private lateinit var layoutEmptyState: LinearLayout
     private lateinit var alertList: MutableList<AlertItem>
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -47,6 +51,8 @@ class ProfileActivity : AppCompatActivity() {
         tvRadius = findViewById(R.id.tvDisplayRadius)
 
         rvAlerts = findViewById(R.id.rvMyAlerts)
+        layoutEmptyState = findViewById(R.id.layoutEmptyStateProfile)
+
         rvAlerts.layoutManager = LinearLayoutManager(this)
         alertList = mutableListOf()
 
@@ -60,17 +66,29 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
+        // 🔥 NUEVA LÓGICA: Confirmación antes de cerrar sesión
         findViewById<Button>(R.id.btnLogout).setOnClickListener {
-            auth.signOut()
-            val intent = Intent(this, com.example.alertascomunitarias.auth.LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Cerrar Sesión")
+                .setMessage("¿Estás seguro de que deseas salir de tu cuenta?")
+                .setPositiveButton("Sí, salir") { _, _ ->
+                    // Si el usuario confirma, ejecutamos el código original
+                    auth.signOut()
+                    val intent = Intent(this, com.example.alertascomunitarias.auth.LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Cancelar") { dialog, _ ->
+                    // Si cancela, simplemente cerramos el cuadro de diálogo
+                    dialog.dismiss()
+                }
+                .show()
         }
     }
 
     private fun setupFilter() {
-        val categorias = arrayOf("Todas", "Robo", "Incendio", "Accidente de Tráfico", "Persona Sospechosa", "Emergencia Médica", "Mascota Perdida")
+        val categorias = arrayOf("Todas", "Robo / Asalto", "Incendio", "Accidente de Tránsito", "Actividad Sospechosa", "Emergencia Médica", "Mascota Perdida")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categorias)
         val dropdown = findViewById<AutoCompleteTextView>(R.id.dropdownFilterProfile)
         dropdown.setAdapter(adapter)
@@ -115,8 +133,16 @@ class ProfileActivity : AppCompatActivity() {
 
         query.orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, e ->
-                if (e != null) return@addSnapshotListener
+
+                // CAZADOR DE ERRORES DE FIREBASE
+                if (e != null) {
+                    Log.e("FirebaseError", "¡Error en la consulta!: ", e)
+                    Toast.makeText(this, "Falta índice en Firebase. Revisa el Logcat.", Toast.LENGTH_LONG).show()
+                    return@addSnapshotListener
+                }
+
                 alertList.clear()
+
                 snapshots?.let {
                     for (doc in it) {
                         val timestamp = doc.getTimestamp("timestamp")
@@ -129,11 +155,30 @@ class ProfileActivity : AppCompatActivity() {
                             status = doc.getString("status") ?: "active",
                             date = dateString,
                             userName = doc.getString("name") ?: doc.getString("userName") ?: doc.getString("usuario") ?: "Yo",
-                            userId = doc.getString("userId") ?: ""
+                            userId = doc.getString("userId") ?: "",
+                            distance = "" // En el perfil no hace falta mostrar la distancia
                         )
                         alertList.add(alert)
                     }
                 }
+
+                // LÓGICA DEL ESTADO VACÍO
+                if (alertList.isEmpty()) {
+                    rvAlerts.visibility = View.GONE
+                    layoutEmptyState.visibility = View.VISIBLE
+
+                    val tvEmpty = findViewById<TextView>(R.id.tvEmptyStateProfileText)
+                    if (mostrarResueltas) {
+                        tvEmpty.text = "No tienes historial para esta categoría"
+                    } else {
+                        tvEmpty.text = "No tienes alertas activas en esta categoría"
+                    }
+
+                } else {
+                    rvAlerts.visibility = View.VISIBLE
+                    layoutEmptyState.visibility = View.GONE
+                }
+
                 rvAlerts.adapter = AlertAdapter(
                     alertList,
                     currentUserId = uid,
@@ -143,7 +188,6 @@ class ProfileActivity : AppCompatActivity() {
             }
     }
 
-    // La función maestra que actualiza la base de datos a "resuelto"
     private fun resolverAlerta(alertId: String) {
         db.collection("alerts").document(alertId).update("status", "resuelto")
             .addOnSuccessListener { Toast.makeText(this, "Alerta marcada como resuelta", Toast.LENGTH_SHORT).show() }
@@ -174,7 +218,6 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    // El modelo de datos centralizado
     data class AlertItem(
         val id: String = "",
         val category: String = "",

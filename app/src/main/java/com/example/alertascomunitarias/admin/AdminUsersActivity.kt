@@ -92,7 +92,7 @@ class AdminUsersActivity : AppCompatActivity() {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.dashboard ->  {
+                R.id.nav_dashboard ->  {
                     val intent = Intent(this, AdminActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                     startActivity(intent)

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#F5F5F5">
 
     <TextView
         android:id="@+id/tvFeedTitle"
@@ -35,6 +35,7 @@
             android:layout_height="wrap_content"
             android:hint="Filtrar por categoría"
             app:boxStrokeWidth="0dp"
+            android:background="#F5F5F5"
             app:boxStrokeWidthFocused="0dp">
 
             <AutoCompleteTextView
@@ -116,6 +117,7 @@
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
         android:elevation="8dp"
+        app:itemActiveIndicatorStyle="@style/buttonBackground"
         app:itemIconTint="@color/nav_color_state"
         app:itemTextColor="@color/nav_color_state"
         app:menu="@menu/bottom_nav_menu"

@@ -112,7 +112,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="40dp"
             android:layout_marginBottom="24dp"
-            android:backgroundTint="#FF9075"
+            android:backgroundTint="@color/primary"
             android:text="Guardar Cambios"
             android:textColor="#FFFFFF"
             android:textStyle="bold"

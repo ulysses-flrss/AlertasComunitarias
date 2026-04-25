@@ -101,7 +101,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="24dp"
-            android:backgroundTint="#FF9075"
+            android:backgroundTint="@color/primary"
             android:enabled="false"
             android:text="Publicar Alerta"
             android:textColor="#FFFFFF"

@@ -16,7 +16,6 @@ class AdminActivity : AppCompatActivity() {
     private lateinit var tvTotalAlerts: TextView
     private lateinit var tvActiveAlerts: TextView
     private lateinit var tvResolvedAlerts: TextView
-    private lateinit var tvFireAlerts: TextView
 
     private lateinit var tvTotalUsers: TextView
     private lateinit var tvAdminUsers: TextView
@@ -30,7 +29,7 @@ class AdminActivity : AppCompatActivity() {
         tvTotalAlerts = findViewById(R.id.tvTotalAlerts)
         tvActiveAlerts = findViewById(R.id.tvActiveAlerts)
         tvResolvedAlerts = findViewById(R.id.tvResolvedAlerts)
-        tvFireAlerts = findViewById(R.id.tvFireAlerts)
+
 
         tvTotalUsers = findViewById(R.id.tvTotalUsers)
         tvAdminUsers = findViewById(R.id.tvAdminUsers)
@@ -108,7 +107,7 @@ class AdminActivity : AppCompatActivity() {
             tvTotalAlerts.text = total.toString()
             tvActiveAlerts.text = active.toString()
             tvResolvedAlerts.text = resolved.toString()
-            tvFireAlerts.text = fire.toString()
+
         }
 
         // 👥 USUARIOS

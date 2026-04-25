@@ -9,12 +9,12 @@
     <item
         android:id="@+id/nav_GestionAlertas"
         android:icon="@drawable/ic_alerta"
-        android:title="Gestion de Alertas" />
+        android:title="Alertas" />
 
     <item
         android:id="@+id/nav_GestionUsuarios"
         android:icon="@drawable/ic_usuarios"
-        android:title="Gestios de Usuarios" />
+        android:title="Usuarios" />
 
     <item
         android:id="@+id/menu_cerrar_sesion"
