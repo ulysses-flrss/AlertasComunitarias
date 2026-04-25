@@ -34,6 +34,16 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/tvItemDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:text="📍 2.5 km"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+
+            <TextView
                 android:id="@+id/tvItemDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -61,5 +71,19 @@
             android:textSize="12sp"
             android:textColor="#4CAF50" />
 
+
+        <Button
+            android:id="@+id/btnResolveAlert"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Marcar como Resuelta"
+            android:textColor="#4CAF50"
+            app:strokeColor="#4CAF50"
+            app:cornerRadius="8dp"/>
+
     </LinearLayout>
+
+
 </com.google.android.material.card.MaterialCardView>
